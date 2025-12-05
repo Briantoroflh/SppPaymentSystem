@@ -4,10 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Permission\Traits\HasRoles;
 
-class Student extends Model
+class Student extends Authenticatable
 {
-    use SoftDeletes;
+    use SoftDeletes, HasRoles;
+
+    /**
+     * Specify guard untuk Spatie Permission dan Authentication
+     */
+    protected $guard_name = 'student';
 
     protected $fillable = [
         'name',
@@ -20,9 +27,29 @@ class Student extends Model
         'already_paid',
     ];
 
+    /**
+     * Override guard name untuk Spatie Permission
+     */
+    public function getGuardName()
+    {
+        return $this->guard_name ?? 'student';
+    }
+
     protected $casts = [
         'isActive' => 'boolean',
     ];
+
+    public static function rules()
+    {
+        return [
+            'name' => 'string|required',
+            'age' => 'numeric|required',
+            'nisn' => 'string|required',
+            'nik' => 'string|required',
+            'phone_number' => 'string|required',
+            'isActive' => 'boolean|required',
+        ];
+    }
 
     // Relationships
     public function schoolGroups()

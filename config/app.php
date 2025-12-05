@@ -99,6 +99,11 @@ return [
 
     'key' => env('APP_KEY'),
 
+    'midtrans_key' => env('SERVER_KEY_MID'),
+    'midtrans_prod' => env('IS_PRODUCTION'),
+    'midtrans_sanitized' => env('IS_SANITIZED'),
+    'midtrans_3ds' => env('IS_3DS'),
+
     'previous_keys' => [
         ...array_filter(
             explode(',', (string) env('APP_PREVIOUS_KEYS', ''))

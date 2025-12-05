@@ -15,6 +15,15 @@ class Region extends Model
         'latitude',
     ];
 
+    public static function rules()
+    {
+        return [
+            'name' => 'string|required',
+            'longitude' => 'numeric|required',
+            'latitude' => 'numeric|required',
+        ];
+    }
+
     // Relationships
     public function schools()
     {

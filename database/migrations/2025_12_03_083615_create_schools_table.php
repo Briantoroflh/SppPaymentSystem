@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('address');
             $table->text('phone_number');
             $table->string('level');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->foreignId('region_id')->constrained('regions')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();

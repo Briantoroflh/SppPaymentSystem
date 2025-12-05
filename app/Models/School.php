@@ -15,7 +15,20 @@ class School extends Model
         'phone_number',
         'level',
         'region_id',
+        'user_id',
     ];
+
+    public static function rules()
+    {
+        return [
+            'name' => 'string|required',
+            'address' => 'string|required',
+            'phone_number' => 'string|required',
+            'level' => 'string|required',
+            'region_id' => 'numeric|required',
+            'user_id' => 'nullable|numeric|exists:users,id',
+        ];
+    }
 
     // Relationships
     public function region()
@@ -26,5 +39,10 @@ class School extends Model
     public function schoolGroups()
     {
         return $this->hasMany(SchoolGroup::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

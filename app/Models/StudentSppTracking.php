@@ -9,6 +9,7 @@ class StudentSppTracking extends Model
 {
     use SoftDeletes;
 
+    protected $table = 'student_spp_trackings';
     protected $fillable = [
         'student_spp_id',
         'date_month',

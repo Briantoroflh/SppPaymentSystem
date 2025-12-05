@@ -20,6 +20,15 @@ class Major extends Model
         'isActive' => 'boolean',
     ];
 
+    public static function rules()
+    {
+        return [
+            'name' => 'string|required',
+            'start_at' => 'date|required',
+            'isActive' => 'boolean|required',
+        ];
+    }
+
     // Relationships
     public function classes()
     {

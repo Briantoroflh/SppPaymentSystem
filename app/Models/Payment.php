@@ -9,6 +9,7 @@ class Payment extends Model
     protected $fillable = [
         'payment_id',
         'student_spp_id',
+        'student_spp_tracking_id',
         'total_price',
         'payment_method',
         'status_payment',
@@ -25,5 +26,10 @@ class Payment extends Model
     public function studentSpp()
     {
         return $this->belongsTo(StudentSpp::class);
+    }
+
+    public function studentSppTracking()
+    {
+        return $this->belongsTo(StudentSppTracking::class);
     }
 }
