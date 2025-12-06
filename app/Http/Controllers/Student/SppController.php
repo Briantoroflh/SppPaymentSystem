@@ -3,25 +3,32 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Payment;
 use App\Models\StudentSppTracking;
 
-class SppController extends Controller {
-    public function index() {
+class SppController extends Controller
+{
+    public function index()
+    {
         return view('Student.spp.spp');
     }
 
-    public function getAllById($id) {
-        $spp = StudentSppTracking::join('student_spps', 'student_spp_trackings.student_spp_id', '=', 'student_spps.id')
-                ->join('student_classes', 'student_spps.student_class_id', '=', 'student_classes.id')
-                ->join('students', 'student_classes.student_id', '=', 'students.id')
-                ->select('student_spp_trackings.id','students.name', 'student_spps.price', 'student_spps.semester', 'student_spp_trackings.date_month', 'student_spp_trackings.status')
-                ->where('students.id', $id)
-                ->get();
+    public function getAllById($id)
+    {
+        $spp = Payment::rightjoin('student_spp_trackings', 'payments.student_spp_tracking_id', '=', 'student_spp_trackings.id')
+            ->join('student_spps', 'student_spp_trackings.student_spp_id', '=', 'student_spps.id')
+            ->join('student_classes', 'student_spps.student_class_id', '=', 'student_classes.id')
+            ->join('students', 'student_classes.student_id', '=', 'students.id')
+            ->select('student_spp_trackings.id', 'students.name', 'student_spps.price', 'student_spps.semester', 'student_spp_trackings.date_month', 'student_spp_trackings.status', 'payments.status_payment')
+            ->where('students.id', $id)
+            ->orderBy('student_spp_trackings.date_month')
+            ->get();
 
         return response()->json($spp);
     }
 
-    public function getSppById($id) {
+    public function getSppById($id)
+    {
         $spp = StudentSppTracking::join('student_spps', 'student_spp_trackings.student_spp_id', '=', 'student_spps.id')
             ->join('student_classes', 'student_spps.student_class_id', '=', 'student_classes.id')
             ->join('students', 'student_classes.student_id', '=', 'students.id')

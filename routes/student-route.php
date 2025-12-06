@@ -33,6 +33,7 @@ Route::middleware('auth:student')->group(function () {
     Route::prefix('student/payment')->group(function () {
         Route::post('/{studentSppId}', [PaymentController::class, 'store'])->name('student.payment.store');
         Route::get('/success/{paymentId}', [PaymentController::class, 'success'])->name('payment.success');
+        Route::get('/invoice/{trackingId}/pdf', [PaymentController::class, 'downloadInvoicePdf'])->name('payment.invoice.pdf');
     });
 });
 

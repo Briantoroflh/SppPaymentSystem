@@ -13,7 +13,7 @@ class StudentObserver
     public function created(Student $student): void
     {
         try {
-            // Cari role 'Student' dengan guard 'web'
+            // Cari role 'Student' dengan guard 'student'
             $role = Role::where('name', 'Student')
                 ->where('guard_name', 'student')
                 ->first();

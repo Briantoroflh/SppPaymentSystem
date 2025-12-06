@@ -51,7 +51,7 @@ class MenuSeeder extends Seeder
                 'sequence' => 5,
                 'head_title' => 'Common',
                 'title' => 'Student',
-                'icon' => 'ri-user-student-line',
+                'icon' => 'ri-user-2-line',
                 'url' => '/dashboard/manage-student',
                 'created_by' => 'Admin'
             ],
@@ -69,6 +69,46 @@ class MenuSeeder extends Seeder
                 'title' => 'User',
                 'icon' => 'ri-user-line',
                 'url' => '/dashboard/manage-users',
+                'created_by' => 'Admin'
+            ],
+            [
+                'sequence' => 1,
+                'head_title' => 'Accessbility',
+                'title' => 'Role',
+                'icon' => 'ri-shield-line',
+                'url' => '/dashboard/manage-role',
+                'created_by' => 'Admin'
+            ],
+            [
+                'sequence' => 1,
+                'head_title' => 'Finance',
+                'title' => 'Spp Student',
+                'icon' => 'ri-bill-line',
+                'url' => '/dashboard/manage-spp',
+                'created_by' => 'Admin'
+            ],
+            [
+                'sequence' => 9,
+                'head_title' => 'Common',
+                'title' => 'Classes',
+                'icon' => 'ri-building-3-line',
+                'url' => '/dashboard/manage-classes',
+                'created_by' => 'Admin'
+            ],
+            [
+                'sequence' => 1,
+                'head_title' => 'Group',
+                'title' => 'Student Classes',
+                'icon' => 'ri-home-smile-line',
+                'url' => '/dashboard/manage-student-classes',
+                'created_by' => 'Admin'
+            ],
+            [
+                'sequence' => 2,
+                'head_title' => 'Finance',
+                'title' => 'Bill Spp',
+                'icon' => 'ri-receipt-line',
+                'url' => '/dashboard/student/spp',
                 'created_by' => 'Admin'
             ],
         ];

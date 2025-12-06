@@ -46,7 +46,7 @@ class PaymentController extends Controller
             // Cek jika sudah dibayar berdasarkan status StudentSppTracking
             if ($studentSppTracking->status === 'paid') {
                 // Jika sudah dibayar, cari payment untuk redirect ke success page
-                $payment = Payment::where('student_spp_id', $studentSppTracking->student_spp_id)
+                $payment = Payment::where('student_spp_tracking_id', $studentSppTracking->id)
                     ->where('status_payment', 'completed')
                     ->orderByDesc('id')
                     ->first();
@@ -62,7 +62,7 @@ class PaymentController extends Controller
             // Cek apakah ada payment pending untuk StudentSppTracking ini
             // IMPORTANT: Cari berdasarkan student_spp_id dan status, bukan tracking ID
             // Karena satu StudentSpp bisa punya banyak StudentSppTracking (bulan-bulan berbeda)
-            $existingPayment = Payment::where('student_spp_id', $studentSppTracking->student_spp_id)
+            $existingPayment = Payment::where('student_spp_tracking_id', $studentSppTracking->id)
                 ->where('status_payment', 'pending')
                 ->latest()
                 ->first();
@@ -101,7 +101,6 @@ class PaymentController extends Controller
             // Buat payment record baru dengan unique order_id
             $bill = Payment::create([
                 'payment_id' => 'SPP' . now()->getTimestamp() . rand(100, 999),
-                'student_spp_id' => $studentSppTracking->student_spp_id,
                 'student_spp_tracking_id' => $studentSppTracking->id,
                 'total_price' => $studentSppTracking->price,
                 'payment_method' => 'midtrans',
@@ -222,5 +221,87 @@ class PaymentController extends Controller
             return redirect()->route('dashboard.student.spp')
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    public function downloadInvoicePdf($trackingId)
+    {
+        try {
+            $studentId = Auth::guard('student')->user()->id;
+
+            // Ambil StudentSppTracking dengan data lengkap
+            $tracking = StudentSppTracking::with([
+                'studentSpp.studentClass.student',
+                'studentSpp.studentClass.class.major'
+            ])
+                ->where('id', $trackingId)
+                ->first();
+
+            if (!$tracking) {
+                return redirect()->route('dashboard.student.spp')
+                    ->with('error', 'Data pembayaran tidak ditemukan');
+            }
+
+            // Validasi bahwa tracking milik student yang login
+            if ($tracking->studentSpp->studentClass->student->id !== $studentId) {
+                return redirect()->route('dashboard.student.spp')
+                    ->with('error', 'Akses ditolak');
+            }
+
+            // Validasi bahwa SPP sudah dibayar
+            if ($tracking->status !== 'paid') {
+                return redirect()->route('dashboard.student.spp')
+                    ->with('error', 'Hanya SPP yang sudah dibayar dapat diunduh');
+            }
+
+            // Ambil payment yang sesuai
+            $payment = Payment::where('student_spp_tracking_id', $trackingId)
+                ->where('status_payment', 'completed')
+                ->first();
+
+            if (!$payment) {
+                return redirect()->route('dashboard.student.spp')
+                    ->with('error', 'Data pembayaran tidak ditemukan');
+            }
+
+            // Prepare data untuk PDF
+            $data = [
+                'tracking' => $tracking,
+                'payment' => $payment,
+                'student' => $tracking->studentSpp->studentClass->student,
+                'class' => $tracking->studentSpp->studentClass->class,
+                'major' => $tracking->studentSpp->studentClass->class->major,
+                'month' => $this->formatMonth($tracking->date_month),
+                'formattedDate' => $tracking->date_month->format('d-m-Y'),
+                'price' => number_format($tracking->studentSpp->price, 0, ',', '.'),
+            ];
+
+            // Generate PDF
+            $pdf = \PDF::loadView('Student.payment.invoice', $data);
+            $filename = 'Invoice-SPP-' . $tracking->studentSpp->studentClass->student->name . '-' . $this->formatMonth($tracking->date_month) . '.pdf';
+
+            return $pdf->download($filename);
+        } catch (\Exception $e) {
+            return redirect()->route('dashboard.student.spp')
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    private function formatMonth($date)
+    {
+        $months = [
+            'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        ];
+        return $months[$date->format('n') - 1];
     }
 }

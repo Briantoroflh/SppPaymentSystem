@@ -105,6 +105,12 @@
 
         <div class="modal-action mt-6">
             <button class="btn btn-ghost" onclick="document.getElementById('detail-modal').close()">Tutup</button>
+            <button id="download-btn" class="btn btn-error text-white gap-2 hidden" onclick="downloadPdf()">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+                Download PDF
+            </button>
             <button id="pay-btn" class="btn btn-primary gap-2" onclick="confirmPayment()">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"></path>
@@ -225,14 +231,13 @@
 
             data.forEach((item, index) => {
                 const status = item.status.toLowerCase();
-                console.log(item.status);
-                
-                const statusBadge = getStatusBadge(status);
-                const statusIcon = getStatusIcon(status);
+                const paymentStatus = item.status_payment ? item.status_payment.toLowerCase() : ''
 
-                if (status === 'paid') paidCount++;
-                else if (status === 'unpaid') unpaidCount++;
-                else if (status === 'pending') pendingCount++;
+                const displayStatus = (paymentStatus === 'pending') ? 'pending' : status
+
+                if (status === 'paid' && paymentStatus === 'completed') paidCount++;
+                else if (status === 'unpaid' && paymentStatus === '') unpaidCount++;
+                else if (status === 'unpaid' && paymentStatus === 'pending') pendingCount++;
 
                 html += `
                     <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 border border-base-300">
@@ -247,9 +252,9 @@
                                         Semester ${item.semester}
                                     </p>
                                 </div>
-                                <div class="${statusBadge}">
-                                    ${statusIcon}
-                                    <span class="text-xs font-semibold">${formatStatus(status)}</span>
+                                <div class="${getStatusBadge(displayStatus)}">
+                                    ${getStatusIcon(displayStatus)}
+                                    <span class="text-xs font-semibold">${formatStatus(displayStatus)}</span>
                                 </div>
                             </div>
 
@@ -314,8 +319,10 @@
         window.showDetail = function(jsonData, itemId) {
             try {
                 const item = JSON.parse(decodeURIComponent(jsonData));
-                const status = item.status.toLowerCase();
-                const statusBadge = getStatusBadge(status);
+                const status = item.status.toLowerCase()
+                const paymentStatus = item.status_payment ? item.status_payment.toLowerCase() : ''
+
+                const displayStatus = (paymentStatus === 'pending') ? 'pending' : status
 
                 // Store current item data dan ID untuk payment confirmation
                 window.currentSppData = item;
@@ -323,17 +330,17 @@
 
                 // Check jika sudah ada payment atau status sudah paid
                 let showPayButton = false;
-                let paymentStatus = '';
+                let paymentStatusMessage = '';
 
                 if (status === 'unpaid') {
                     showPayButton = true;
-                    paymentStatus = '';
+                    paymentStatusMessage = '';
                 } else if (status === 'pending') {
                     showPayButton = true;
-                    paymentStatus = '<div class="alert alert-warning mt-4 text-sm"><svg class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Pembayaran Anda masih menunggu konfirmasi. Klik tombol di bawah untuk melanjutkan pembayaran jika belum selesai.</span></div>';
+                    paymentStatusMessage = '<div class="alert alert-warning mt-4 text-sm"><svg class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Pembayaran Anda masih menunggu konfirmasi. Klik tombol di bawah untuk melanjutkan pembayaran jika belum selesai.</span></div>';
                 } else if (status === 'paid') {
                     showPayButton = false;
-                    paymentStatus = '';
+                    paymentStatusMessage = '';
                 }
 
                 const detailHtml = `
@@ -361,18 +368,13 @@
 
                         <div class="bg-base-200 p-4 rounded-lg">
                             <p class="text-sm text-base-content/70 mb-2">Status Pembayaran</p>
-                            <div class="${statusBadge} inline-flex">
-                                ${getStatusIcon(status)}
-                                <span class="font-semibold">${formatStatus(status)}</span>
+                            <div class="${getStatusBadge(displayStatus)} inline-flex">
+                                ${getStatusIcon(displayStatus)}
+                                <span class="font-semibold">${formatStatus(displayStatus)}</span>
                             </div>
                         </div>
 
-                        <div class="bg-base-200 p-4 rounded-lg">
-                            <p class="text-sm text-base-content/70">Tanggal Pembayaran</p>
-                            <p class="text-lg font-semibold text-base-content">${new Date(item.date_month).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                        </div>
-
-                        ${status === 'unpaid' ? `
+                        ${displayStatus === 'unpaid' ? `
                             <div class="alert alert-info">
                                 <svg class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -381,33 +383,41 @@
                             </div>
                         ` : ''}
 
-                        ${status === 'pending' ? `
+                        ${displayStatus === 'pending' ? `
                             <div class="alert alert-warning">
                                 <svg class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                <span>Pembayaran Anda sedang menunggu konfirmasi admin</span>
+                                <span>Pembayaran Anda Berstatus Pending. Silahkan Lanjutkan Pembayaran</span>
                             </div>
                         ` : ''}
 
-                        ${status === 'paid' ? `
+                        ${displayStatus === 'paid' ? `
                             <div class="alert alert-success">
                                 <svg class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                <span>Pembayaran sudah dikonfirmasi</span>
+                                <span>Pembayaran berhasil!</span>
                             </div>
                         ` : ''}
 
-                        ${paymentStatus}
+                        ${paymentStatusMessage}
                     </div>
                 `;
 
                 // Set pay button visibility based on status
                 if (showPayButton) {
                     $('#pay-btn').show();
+                    $('#download-btn').addClass('hidden');
                 } else {
                     $('#pay-btn').hide();
+                }
+
+                // Show download button if paid
+                if (status === 'paid') {
+                    $('#download-btn').removeClass('hidden');
+                } else {
+                    $('#download-btn').addClass('hidden');
                 }
 
                 $('#detail-content').html(detailHtml);
@@ -445,8 +455,6 @@
                 alert('ID SPP tidak ditemukan');
                 return;
             }
-
-            console.log(window.currentSppStudentTrackingId);
 
             const confirmBtn = $('#confirm-pay-btn');
 
@@ -491,8 +499,6 @@
                         document.getElementById('payment-confirm-modal').close();
                         snap.pay(response.token, {
                             onSuccess: function(result) {
-                                console.log('Payment successful:', result);
-                                // Redirect ke finish page untuk process Midtrans response
                                 window.location.href = `{{ route('payment.finish') }}?order_id=${result.order_id}&transaction_status=settlement&status_code=200`;
                             },
                             onPending: function(result) {
@@ -546,6 +552,22 @@
             };
             return statuses[status] || status;
         }
+
+        window.downloadPdf = function() {
+            if (!window.currentSppData) {
+                alert('Data SPP tidak ditemukan');
+                return;
+            }
+
+            if (!window.currentSppStudentTrackingId) {
+                alert('ID SPP tidak ditemukan');
+                return;
+            }
+
+            // Download PDF dengan tracking ID
+            const url = `/student/payment/invoice/${window.currentSppStudentTrackingId}/pdf`;
+            window.location.href = url;
+        };
 
         function formatMonth(dateString) {
             const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->string('payment_id')->unique();
-            $table->foreignId('student_spp_id')->constrained('student_spps')->onDelete('cascade');
+            $table->foreignId('student_spp_tracking_id')->constrained('student_spp_trackings')->onDelete('cascade');
             $table->double('total_price');
             $table->string('payment_method');
             $table->string('status_payment');

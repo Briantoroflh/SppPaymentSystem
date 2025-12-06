@@ -27,7 +27,7 @@ class MenuRoleSeeder extends Seeder
             $schoolAdmin = Role::create(['name' => 'School Admin', 'guard_name' => 'web']);
         }
         if (!$student) {
-            $student = Role::create(['name' => 'Student', 'guard_name' => 'web']);
+            $student = Role::create(['name' => 'Student', 'guard_name' => 'student']);
         }
 
         // Get all menus
@@ -43,9 +43,7 @@ class MenuRoleSeeder extends Seeder
         // Assign specific menus to School Admin
         $schoolAdminMenus = Menu::whereIn('title', [
             'Dashboard',
-            'School',
             'Major',
-            'Region',
             'Student',
             'Teacher',
         ])->get();
@@ -58,7 +56,7 @@ class MenuRoleSeeder extends Seeder
 
         // Assign specific menus to Student
         $studentMenus = Menu::whereIn('title', [
-            'Dashboard',
+            'Bill Spp'
         ])->get();
 
         foreach ($studentMenus as $menu) {
